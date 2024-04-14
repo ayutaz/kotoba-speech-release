@@ -16,5 +16,7 @@ soundfile
 gradio
 huggingface_hub
 wandb
-pytorch_lightning
 IPython
+pytorch-lightning==2.2.1
+pytorch-triton==3.0.0+989adb9a29
+torch==2.4.0.dev20240321+cu121
