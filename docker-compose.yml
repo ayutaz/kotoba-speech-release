@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  kotoba_speech:
+    image: kotoba_speech_image
+    build:
+      context: .
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    volumes:
+      - ./outputs:/home/user/kotoba_speech_release/outputs
+    stdin_open: true
+    tty: true

@@ -119,7 +119,7 @@ docker build -t kotoba-speech .
 
 ### Dockerコンテナの起動
 ```bash
-docker run -it --gpus all --name kotoba-speech kotoba-speech
+docker run --gpus all --rm -it kotoba-speech
 ```
 
 ### Docker内部でのコマンド実行
