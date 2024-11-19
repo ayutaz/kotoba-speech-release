@@ -58,9 +58,10 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 # xformersをインストール
 RUN pip install xformers==0.0.24
 
-# audiocraftをクローンして通常モードでインストール
+# audiocraftをクローンして特定のコミットハッシュでインストール
 RUN git clone https://github.com/facebookresearch/audiocraft.git \
     && cd audiocraft \
+    && git checkout f5931855b8e662462d0af8256d9c084ca04d6a94 \
     && pip install . \
     && cd .. \
     && rm -rf audiocraft
