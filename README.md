@@ -114,12 +114,12 @@ We thank [MetaVoice](https://github.com/metavoiceio/metavoice-src) for releasing
 
 ### Dockerイメージのビルド
 ```bash
-docker build -t kotoba-speech .
+docker compose build
 ```
 
 ### Dockerコンテナの起動
 ```bash
-docker run --gpus all --rm -it kotoba-speech
+docker compose run kotoba_speech
 ```
 
 ### Docker内部でのコマンド実行
