@@ -10,7 +10,7 @@ ENV HOST=docker \
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 必要なシステムパッケージをインストール（ninja-buildとpython3-devを含む）
+# 必要なシステムパッケージをインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         cmake \
@@ -33,20 +33,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-dev \
         libsndfile1 \
         ffmpeg \
+        gfortran \
         && rm -rf /var/lib/apt/lists/*
 
 # HOMEと作業ディレクトリの設定
 ENV HOME=/home/user
-RUN mkdir -p /home/user && chmod 777 /home/user
 WORKDIR /home/user
 
 # pipのキャッシュを無効化
 ENV PIP_NO_CACHE_DIR=1
 
-# FlashAttentionのホイールをダウンロードしてインストール
-RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.0.post2/flash_attn-2.7.0.post2%2Bcu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
-    && pip install flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
-    && rm flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
+# pip, setuptools, wheelをアップグレード
+RUN pip install --upgrade pip setuptools wheel
+
+# numpyを特定のバージョンでインストール
+RUN pip install numpy==1.26.4
+
+# requirements.txtをコピー
+COPY requirements.txt requirements.txt
+
+# requirements.txtからPythonパッケージをインストール
+RUN pip install --no-cache-dir -r requirements.txt
 
 # xformersをクローンしてインストール
 RUN git clone https://github.com/facebookresearch/xformers.git \
@@ -57,21 +64,20 @@ RUN git clone https://github.com/facebookresearch/xformers.git \
     && cd .. \
     && rm -rf xformers
 
-# audiocraftをクローンしてインストール（依存関係のインストールは別途行う）
+# audiocraftをクローンして通常モードでインストール
 RUN git clone https://github.com/facebookresearch/audiocraft.git \
     && cd audiocraft \
-    && pip install -e . --no-deps \
+    && pip install . \
     && cd .. \
     && rm -rf audiocraft
 
-# requirements.txtをコピー（audiocraftとxformersを除外）
-COPY requirements.txt requirements.txt
+# FlashAttentionのホイールをダウンロードしてインストール
+RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.0.post2/flash_attn-2.7.0.post2%2Bcu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && pip install flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && rm flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
 
-# requirements.txtからPythonパッケージをインストール
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 必要な追加のPythonパッケージをインストール
-RUN pip install torchaudio
+# torchaudioのインストール
+RUN pip install torchaudio==2.1.0
 
 # ホストのコードをコピー
 COPY . /home/user/kotoba_speech_release
