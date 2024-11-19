@@ -1,5 +1,5 @@
 # CUDA 12.1を含むPyTorchのベースイメージを使用
-FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel
+FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel
 
 # 環境変数の設定
 ENV HOST=docker \
@@ -56,13 +56,7 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # xformersをクローンしてインストール
-RUN git clone https://github.com/facebookresearch/xformers.git \
-    && cd xformers \
-    && git submodule update --init --recursive \
-    && pip install -r requirements.txt \
-    && pip install . \
-    && cd .. \
-    && rm -rf xformers
+RUN pip install xformers==0.0.24
 
 # audiocraftをクローンして通常モードでインストール
 RUN git clone https://github.com/facebookresearch/audiocraft.git \
@@ -72,12 +66,12 @@ RUN git clone https://github.com/facebookresearch/audiocraft.git \
     && rm -rf audiocraft
 
 # FlashAttentionのホイールをダウンロードしてインストール
-RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.0.post2/flash_attn-2.7.0.post2%2Bcu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
-    && pip install flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
-    && rm flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
+RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.0.post2/flash_attn-2.7.0.post2%2Bcu12torch2.2cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && pip install flash_attn-2.7.0.post2+cu12torch2.2cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && rm flash_attn-2.7.0.post2+cu12torch2.2cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
 
-# torchaudioのインストール
-RUN pip install torchaudio==2.1.0
+# torchaudioのインストール（バージョン指定）
+RUN pip install torchaudio==2.2.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
 
 # ホストのコードをコピー
 COPY . /home/user/kotoba_speech_release
