@@ -109,3 +109,21 @@ tts.synthesise(text="コトバテクノロジーズのミッションは音声�
 
 ## 5.3　Acknowledgements
 We thank [MetaVoice](https://github.com/metavoiceio/metavoice-src) for releasing their code and their English pre-trained model.
+
+## Docker版の使い方
+
+### Dockerイメージのビルド
+```bash
+docker build -t kotoba-speech .
+```
+
+### Dockerコンテナの起動
+```bash
+docker run -it --gpus all --name kotoba-speech kotoba-speech
+```
+
+### Docker内部でのコマンド実行
+```bash
+python -i fam/llm/fast_inference.py  --model_name kotoba-tech/kotoba-speech-v0.1
+tts.synthesise(text="コトバテクノロジーズのミッションは音声基盤モデルを作る事です。", spk_ref_path="assets/bria.mp3")
+```
