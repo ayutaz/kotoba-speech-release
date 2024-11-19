@@ -1,0 +1,83 @@
+# CUDA 12.1を含むPyTorchのベースイメージを使用
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel
+
+# 環境変数の設定
+ENV HOST=docker \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=America/Los_Angeles \
+    CUDA_HOME=/usr/local/cuda
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 必要なシステムパッケージをインストール（ninja-buildとpython3-devを含む）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        curl \
+        ca-certificates \
+        sudo \
+        less \
+        htop \
+        git \
+        tzdata \
+        wget \
+        tmux \
+        zip \
+        unzip \
+        zsh \
+        stow \
+        subversion \
+        fasd \
+        ninja-build \
+        python3-dev \
+        libsndfile1 \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*
+
+# HOMEと作業ディレクトリの設定
+ENV HOME=/home/user
+RUN mkdir -p /home/user && chmod 777 /home/user
+WORKDIR /home/user
+
+# pipのキャッシュを無効化
+ENV PIP_NO_CACHE_DIR=1
+
+# FlashAttentionのホイールをダウンロードしてインストール
+RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.0.post2/flash_attn-2.7.0.post2%2Bcu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && pip install flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl \
+    && rm flash_attn-2.7.0.post2+cu12torch2.1cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
+
+# xformersをクローンしてインストール
+RUN git clone https://github.com/facebookresearch/xformers.git \
+    && cd xformers \
+    && git submodule update --init --recursive \
+    && pip install -r requirements.txt \
+    && pip install . \
+    && cd .. \
+    && rm -rf xformers
+
+# audiocraftをクローンしてインストール（依存関係のインストールは別途行う）
+RUN git clone https://github.com/facebookresearch/audiocraft.git \
+    && cd audiocraft \
+    && pip install -e . --no-deps \
+    && cd .. \
+    && rm -rf audiocraft
+
+# requirements.txtをコピー（audiocraftとxformersを除外）
+COPY requirements.txt requirements.txt
+
+# requirements.txtからPythonパッケージをインストール
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 必要な追加のPythonパッケージをインストール
+RUN pip install torchaudio
+
+# ホストのコードをコピー
+COPY . /home/user/kotoba_speech_release
+
+# 作業ディレクトリをコードのディレクトリに変更
+WORKDIR /home/user/kotoba_speech_release
+
+# パッケージを編集モードでインストール
+RUN pip install -e .
