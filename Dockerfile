@@ -1,4 +1,4 @@
-# CUDA 12.1を含むPyTorchのベースイメージを使用
+# ベースイメージを指定
 FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel
 
 # 環境変数の設定
@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # HOMEと作業ディレクトリの設定
 ENV HOME=/home/user
-WORKDIR /home/user
+WORKDIR /home/user/kotoba_speech_release
 
 # pipのキャッシュを無効化
 ENV PIP_NO_CACHE_DIR=1
@@ -49,13 +49,13 @@ RUN pip install --upgrade pip setuptools wheel
 # numpyを特定のバージョンでインストール
 RUN pip install numpy==1.26.4
 
-# requirements.txtをコピー
-COPY requirements.txt requirements.txt
+# requirements.txtをコピー（仮の場所にコピー）
+COPY requirements.txt /tmp/requirements.txt
 
 # requirements.txtからPythonパッケージをインストール
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# xformersをクローンしてインストール
+# xformersをインストール
 RUN pip install xformers==0.0.24
 
 # audiocraftをクローンして通常モードでインストール
@@ -72,12 +72,3 @@ RUN wget -q https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.
 
 # torchaudioのインストール（バージョン指定）
 RUN pip install torchaudio==2.2.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
-
-# ホストのコードをコピー
-COPY . /home/user/kotoba_speech_release
-
-# 作業ディレクトリをコードのディレクトリに変更
-WORKDIR /home/user/kotoba_speech_release
-
-# パッケージを編集モードでインストール
-RUN pip install -e .

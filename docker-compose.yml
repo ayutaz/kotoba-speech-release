@@ -2,15 +2,18 @@ version: '3.9'
 
 services:
   kotoba_speech:
-    image: kotoba_speech_image
     build:
       context: .
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
+      dockerfile: Dockerfile
+    image: kotoba_speech_image
     volumes:
-      - ./outputs:/home/user/kotoba_speech_release/outputs
+      - .:/home/user/kotoba_speech_release
+    runtime: nvidia  # 追加
     stdin_open: true
     tty: true
+    command: >
+      /bin/bash -c "
+      cd /home/user/kotoba_speech_release &&
+      pip install -e . &&
+      exec /bin/bash
+      "
